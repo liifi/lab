@@ -1,0 +1,6 @@
+# https://rancher.com/docs/rke/latest/en/example-yamls/
+nodes:
+- address: node-1
+  ssh_key_path: /ws/identity
+  user: root
+  role: [controlplane, etcd, worker]
