@@ -1,0 +1,9 @@
+. {
+  hosts ./hosts {
+    fallthrough
+  }
+  forward . 8.8.8.8:53
+  prometheus
+  errors
+  log
+}

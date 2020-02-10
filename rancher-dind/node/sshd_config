@@ -1,0 +1,29 @@
+AuthorizedKeysFile      .ssh/authorized_keys
+
+AllowTcpForwarding yes
+GatewayPorts yes
+X11Forwarding yes
+#X11DisplayOffset 10
+#X11UseLocalhost yes
+#PermitTTY yes
+#PrintMotd yes
+#PrintLastLog yes
+#TCPKeepAlive yes
+#PermitUserEnvironment no
+#Compression delayed
+#ClientAliveInterval 0
+#ClientAliveCountMax 3
+#UseDNS no
+#PidFile /run/sshd.pid
+#MaxStartups 10:30:100
+PermitTunnel yes
+#ChrootDirectory none
+#VersionAddendum none
+
+# override default of no subsystems
+Subsystem       sftp    /usr/lib/ssh/sftp-server
+
+PermitRootLogin prohibit-password
+PasswordAuthentication no
+ClientAliveInterval 120
+ClientAliveCountMax 720

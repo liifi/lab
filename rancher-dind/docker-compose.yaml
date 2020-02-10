@@ -1,0 +1,101 @@
+version: "3.7"
+services:
+
+  ###############################################
+  # Used as provisioner and "external" dns server
+  # ------------------------------------------------
+  core:
+    hostname: core
+    build:
+      context: .
+      dockerfile: node/Dockerfile
+    volumes: 
+    - ./provision:/ws/provision
+    - ./docker-compose.yaml:/ws/docker-compose.yaml
+    - ./node/identity:/ws/identity
+    - ./dns/entrypoint.sh:/entrypoint.sh
+    - ./dns/Corefile:/ws/Corefile
+    - ./node/resolv.conf:/ws/resolv.conf
+    # entrypoint: /bin/bash
+    environment:
+      KUBECONFIG: ./kube_config_cluster.yml
+    working_dir: /ws
+    stdin_open: true
+    tty: true
+
+
+  ##################################################
+  # Rancher server
+  # ------------------------------------------------
+  rancher:
+    image: rancher/rancher
+    ports:
+    - "443:443"
+    - "80:80"
+
+
+  ##################################################
+  # Nodes being used as if they were VMs or physical
+  # nodes for rke clusters
+  # ------------------------------------------------
+  node-1:
+    hostname: node-1
+    build:
+      context: .
+      dockerfile: node/Dockerfile
+    ports:
+    - "2201:22"
+    # depends_on:
+    # - core
+    # - rancher
+    volumes:
+    - ./node/resolv.conf:/etc/resolv.conf
+    # https://github.com/rancher/rke/blob/master/dind/dind.go#L78
+    # binds: /etc/resolv.conf:/etc/resolv.conf, /var/lib/kubelet-%s:/var/lib/kubelet
+    stdin_open: true
+    tty: true
+    privileged: true
+    sysctls:
+      # https://docs.docker.com/compose/compose-file/
+      # https://the.binbashtheory.com/rke-dind/
+      # https://github.com/rancher/rke/blob/master/dind/dind.go#L78
+      net.ipv4.conf.all.rp_filter: "1"
+  # ------------------------------------------------
+  node-2:
+    hostname: node-2
+    build:
+      context: .
+      dockerfile: node/Dockerfile
+    ports:
+    - "2202:22"
+    volumes:
+    - ./node/resolv.conf:/etc/resolv.conf
+    stdin_open: true
+    tty: true
+    privileged: true
+    sysctls:
+      net.ipv4.conf.all.rp_filter: "1"
+  # ------------------------------------------------
+  node-3:
+    hostname: node-3
+    build:
+      context: .
+      dockerfile: node/Dockerfile
+    ports:
+    - "2203:22"
+    volumes:
+    - ./node/resolv.conf:/etc/resolv.conf
+    stdin_open: true
+    tty: true
+    privileged: true
+    sysctls:
+      net.ipv4.conf.all.rp_filter: "1"
+
+
+#####################
+
+# networks:
+#   rancher:
+
+# volumes:
+#   rancher:
