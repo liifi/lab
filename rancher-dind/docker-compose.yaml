@@ -31,7 +31,7 @@ services:
     image: rancher/rancher
     ports:
     - "443:443"
-    - "80:80"
+    # - "80:80" # Maybe confusing but using for cluster ingress over node-1
 
 
   ##################################################
@@ -45,6 +45,7 @@ services:
       dockerfile: node/Dockerfile
     ports:
     - "2201:22"
+    - "80:80" # Ingress. Use anything.lvh.me for ingress and always have at least node-1 as a worker
     # depends_on:
     # - core
     # - rancher

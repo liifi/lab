@@ -7,6 +7,7 @@ switch ($args[0]) {
   "update" { docker-compose build; docker-compose up -d }
   "reset" { docker-compose down; docker-compose up -d }
   "core" { docker-compose exec core bash }
+  "recore" { docker-compose stop core; docker-compose rm -f core; docker-compose up -d core; docker-compose exec core bash }
   "enter" { docker-compose exec "node-$($args[1])" bash }
   "sshlog" { docker-compose exec "node-$($args[1])" tail -f /var/log/auth.log }
   "ssh" { ssh -i ./node/identity -o StrictHostKeyChecking=no root@localhost -p "220$($args[1])" }
