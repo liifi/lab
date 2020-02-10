@@ -47,6 +47,9 @@ RUN echo "Getting tools" \
     && curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl \
     && chmod +x ./kubectl \
     && mv ./kubectl /usr/local/bin/kubectl \
+    # terraform
+    && wget https://releases.hashicorp.com/terraform/0.12.12/terraform_0.12.12_linux_amd64.zip \
+    && unzip terraform_0.12.12_linux_amd64.zip -d /usr/bin \
     # coredns | for dns server due to dind limitation when spinning up rke cluster
     && wget https://github.com/coredns/coredns/releases/download/v1.6.7/coredns_1.6.7_linux_amd64.tgz \
     && tar -xzvf coredns_1.6.7_linux_amd64.tgz \
