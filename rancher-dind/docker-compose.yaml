@@ -30,8 +30,8 @@ services:
   rancher:
     image: rancher/rancher
     ports:
-    - "443:443"
-    # - "80:80" # Maybe confusing but using for cluster ingress over node-1
+    - "8443:443"
+    # - "8080:80"
     # volumes: [ ./node/identity:/ws/identity ] # rancher doesn't provision via rke existing nodes
 
 
@@ -47,6 +47,7 @@ services:
     ports:
     - "2201:22"
     - "80:80" # Ingress. Use anything.lvh.me for ingress and always have at least node-1 as a worker
+    - "443:443" # Ingress. Use anything.lvh.me for ingress and always have at least node-1 as a worker
     # depends_on:
     # - core
     # - rancher

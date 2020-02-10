@@ -1,5 +1,10 @@
 FROM docker:dind
 
+# ADD https://example.com/some/corpca.pem /usr/local/share/ca-certificates/corpca.pem
+COPY corp /usr/local/share/ca-certificates/
+RUN apk add --no-cache curl wget ca-certificates \
+    && update-ca-certificates
+
 ENV DOCKER_COMPOSE_VERSION 1.22.0
 
 # https://github.com/docker/docker/blob/master/project/PACKAGERS.md#runtime-dependencies
