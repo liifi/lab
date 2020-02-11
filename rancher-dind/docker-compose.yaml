@@ -53,6 +53,7 @@ services:
     # - rancher
     volumes:
     - ./node/resolv.conf:/etc/resolv.conf
+    - ./volumes:/opt/local-path-provisioner # Simple PVC support mapped to host
     # https://github.com/rancher/rke/blob/master/dind/dind.go#L78
     # binds: /etc/resolv.conf:/etc/resolv.conf, /var/lib/kubelet-%s:/var/lib/kubelet
     stdin_open: true
@@ -73,6 +74,7 @@ services:
     - "2202:22"
     volumes:
     - ./node/resolv.conf:/etc/resolv.conf
+    - ./volumes:/opt/local-path-provisioner # Simple PVC support mapped to host
     stdin_open: true
     tty: true
     privileged: true
@@ -88,6 +90,7 @@ services:
     - "2203:22"
     volumes:
     - ./node/resolv.conf:/etc/resolv.conf
+    - ./volumes:/opt/local-path-provisioner # Simple PVC support mapped to host
     stdin_open: true
     tty: true
     privileged: true

@@ -1,0 +1,19 @@
+# https://rancher.com/docs/rke/latest/en/example-yamls/
+nodes:
+- address: node-1
+  ssh_key_path: /ws/identity
+  user: root
+  role: [controlplane, etcd, worker]
+- address: node-2
+  ssh_key_path: /ws/identity
+  user: root
+  role: [controlplane, etcd, worker]
+- address: node-3
+  ssh_key_path: /ws/identity
+  user: root
+  role: [controlplane, etcd, worker]
+
+addons_include:
+- https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml # Simple PVC Support
+# - https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pvc.yaml
+# - https://raw.githubusercontent.com/rancher/local-path-provisioner/master/examples/pod.yaml
