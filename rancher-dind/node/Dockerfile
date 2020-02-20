@@ -34,32 +34,35 @@ RUN apk add --no-cache \
 RUN echo "Adding some settings" \
     # Unlock root account
     && sed -ie "s|root:!::0:::::|root:*::0:::::|" /etc/shadow \
-    # Install some extra dependencies
+    # Install some extra dependencies (for provisioning from core)
     && pip install yq \
     && apk add bash jq bind-tools curl
 
 # get tools
 RUN echo "Getting tools" \
-    # rancher
+    # rancher (for provisioning from core)
     && wget https://github.com/rancher/cli/releases/download/v2.3.2/rancher-linux-amd64-v2.3.2.tar.gz \
     && tar -xzvf rancher-linux-amd64-v2.3.2.tar.gz \
     && mv rancher-v2.3.2/rancher /usr/bin/ \
     && rm -Rf rancher* \
-    # rke
+    # rke (for provisioning from core)
     && wget https://github.com/rancher/rke/releases/download/v1.0.4/rke_linux-amd64 -O /usr/bin/rke \
     && chmod +x /usr/bin/rke \
-    # kubectl
+    # kubectl (for provisioning from core)
     && curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl \
     && chmod +x ./kubectl \
     && mv ./kubectl /usr/local/bin/kubectl \
-    # terraform
+    # terraform (for provisioning from core)
     && wget https://releases.hashicorp.com/terraform/0.12.12/terraform_0.12.12_linux_amd64.zip \
     && unzip terraform_0.12.12_linux_amd64.zip -d /usr/bin \
-    # coredns | for dns server due to dind limitation when spinning up rke cluster
+    # coredns | for dns server due to dind limitation when spinning up rke cluster (for provisioning from core)
     && wget https://github.com/coredns/coredns/releases/download/v1.6.7/coredns_1.6.7_linux_amd64.tgz \
     && tar -xzvf coredns_1.6.7_linux_amd64.tgz \
     && mv coredns /usr/bin/ \
-    && rm -Rf coredns*
+    && rm -Rf coredns* \
+    # helm | for chart installations from cli (for provisioning from core)
+    && wget -q https://get.helm.sh/helm-v3.1.0-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
+    && chmod +x /usr/local/bin/helm
 
 COPY node/sshd_config /etc/ssh/sshd_config
 COPY node/identity.pub /identity.pub

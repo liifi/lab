@@ -39,7 +39,7 @@ services:
   # Nodes being used as if they were VMs or physical
   # nodes for rke clusters
   # ------------------------------------------------
-  node-1:
+  node-1: &node
     hostname: node-1
     build:
       context: .
@@ -52,10 +52,11 @@ services:
     # - core
     # - rancher
     volumes:
-    - ./node/resolv.conf:/etc/resolv.conf
-    - ./volumes:/opt/local-path-provisioner # Simple PVC support mapped to host
-    # https://github.com/rancher/rke/blob/master/dind/dind.go#L78
-    # binds: /etc/resolv.conf:/etc/resolv.conf, /var/lib/kubelet-%s:/var/lib/kubelet
+    - &vol-resolv ./node/resolv.conf:/etc/resolv.conf
+    - &vol-pv ./volumes:/opt/local-path-provisioner # Simple PVC support mapped to host
+    # - node-1-rke:/opt/rke
+    # - node-1-kubelet:/var/lib/kubelet
+    # - node-1-docker:/var/lib/docker
     stdin_open: true
     tty: true
     privileged: true
@@ -66,37 +67,37 @@ services:
       net.ipv4.conf.all.rp_filter: "1"
   # ------------------------------------------------
   node-2:
+    <<: *node
     hostname: node-2
-    build:
-      context: .
-      dockerfile: node/Dockerfile
     ports:
     - "2202:22"
-    volumes:
-    - ./node/resolv.conf:/etc/resolv.conf
-    - ./volumes:/opt/local-path-provisioner # Simple PVC support mapped to host
-    stdin_open: true
-    tty: true
-    privileged: true
-    sysctls:
-      net.ipv4.conf.all.rp_filter: "1"
+    # volumes: [ *vol-resolv, *vol-pv, node-2-rke:/opt/rke, node-2-kubelet:/var/lib/kubelet, node-2-docker:/var/lib/docker]
   # ------------------------------------------------
   node-3:
+    <<: *node
     hostname: node-3
-    build:
-      context: .
-      dockerfile: node/Dockerfile
     ports:
     - "2203:22"
-    volumes:
-    - ./node/resolv.conf:/etc/resolv.conf
-    - ./volumes:/opt/local-path-provisioner # Simple PVC support mapped to host
-    stdin_open: true
-    tty: true
-    privileged: true
-    sysctls:
-      net.ipv4.conf.all.rp_filter: "1"
-
+  # ------------------------------------------------
+  node-4:
+    <<: *node
+    hostname: node-4
+    ports:
+    - "2204:22"
+    - "4080:80" # This would be the ingress for a second cluster that node-4 is part of as a worker (cl-ha-rancher scenario)
+    - "4443:443" # This would be the ingress for a second cluster that node-4 is part of as a worker (cl-ha-rancher scenario)
+  # ------------------------------------------------
+  node-5:
+    <<: *node
+    hostname: node-5
+    ports:
+    - "2205:22"
+  # ------------------------------------------------
+  node-6:
+    <<: *node
+    hostname: node-6
+    ports:
+    - "2206:22"
 
 #####################
 

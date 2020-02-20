@@ -2,7 +2,7 @@
 
 Push-Location $PSScriptRoot
 switch ($args[0]) {
-  "init" { ./run.ps1 keygen; ./run.ps1 update }
+  "init" { ./run.ps1 keygen; Write-Output $null >> ./node/resolv.conf; ./run.ps1 update }
   "keygen" { ssh-keygen -q -t rsa -f ./node/identity }
   "update" { docker-compose build; docker-compose up -d }
   "reset" { docker-compose down; docker-compose up -d }
