@@ -25,7 +25,7 @@ This lab provides multiple [rancher](https://rancher.com/) scenarios. These scen
   ./run.ps1 core
   ```
 - From `core`, deploy an `rke` cluster using the [provision/cli-basic/cluster.yml](./provision/cli-basic/cluster.yml)
-  > **Important** Read notes further down on README regarding **not** using **wsl 2**
+  > **Important** In case you are **not** using **wsl 2**, read notes further down on this README 
   ```bash
   cd provision/cli-ha
   # vi cluster.yml # if needed
