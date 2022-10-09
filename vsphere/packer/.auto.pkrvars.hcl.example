@@ -1,0 +1,29 @@
+# Adjust and remove extension .example on file
+#############################
+answers = {
+  vcenter_server = "vcenter.local"
+  vcenter_username = "packer"
+  vcenter_cluster = "Cluster-01"
+  vcenter_datacenter = "Home"
+  vcenter_datastore = "SATAStorage"
+  vcenter_password = "superCoolPassword"
+  vm_network = "Untagged"
+  #############################
+  name = "ubuntu-template"
+  guest_os_type = "ubuntu64Guest"
+  # iso_path = "[SATAStorage] iso/ubuntu-20.04.4-live-server-amd64.iso"
+  iso_url = "http://cdimage.ubuntu.com/ubuntu-server/jammy/daily-live/current/jammy-live-server-amd64.iso" # 20.04
+  iso_checksum = "f8a2209af99f87d235ab9db14c9fdf4d022ff0155b9e63f4b9c24cabbfc4d68b"
+  ip = "x.x.x.x"
+  gateway = "x.x.x.x"
+  ip_slash = "24"
+  dns = "8.8.8.8"
+  # netmask = "255.255.255.0"
+  # user = "vagrant"
+  # pass = "vagrant" # Encrypt with: mkpasswd --rounds 15000 -m SHA-512 ${PASS} kzRuoYUc97N8A4bK$SeBtYNRLeIV
+  # pass_encrypted = "$6$rounds=15000$kzRuoYUc97N8A4bK$SeBtYNRLeIV/asRqhNx6KmfFnFyn16OuqzD.sttVLn8y4rLMtIXFSAPbsDJazzlInliJhtiS6LMT5pT408MOr/"
+  disk = 100
+  cpu = 4
+  cores = 1
+  memory = 4
+}

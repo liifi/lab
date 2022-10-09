@@ -1,0 +1,49 @@
+
+dns = "8.8.8.8"
+servers = [
+  { :seq => "10", :az => "1", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  { :seq => "11", :az => "1", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  # { :seq => "12", :az => "1", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  
+  { :seq => "10", :az => "2", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  # { :seq => "11", :az => "2", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  # { :seq => "12", :az => "2", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  
+  # { :seq => "10", :az => "3", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  # { :seq => "11", :az => "3", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+  # { :seq => "12", :az => "3", :ip => "10.11", :dns => dns, :memory => "2048", :cpu => "4", role: nil },
+
+  # A seperate subnet to represent "internal" role
+  { :seq => "10", :az => "9", :ip => "10.11", :dns => dns, :memory => "4096", :cpu => "4", role: "docker" },
+]
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/ubuntu2204"
+  servers.each do |conf|
+    config.vm.define "az#{conf[:az]}-n#{conf[:seq]}" do |node|
+      node.trigger.before :up do |trigger|
+        trigger.info = "Creating 'az#{conf[:az]}' Hyper-V switch if it does not exist..."
+        trigger.run = {privileged: "true", powershell_elevated_interactive: "true", path: "./scripts/switch-create.ps1", args: [ conf[:az] ]}
+      end
+      node.trigger.before :reload do |trigger|
+        trigger.info = "Setting Hyper-V switch to 'az#{conf[:az]}' to allow for static IP..."
+        trigger.run = {privileged: "true", powershell_elevated_interactive: "true", path: "./scripts/switch-set.ps1", args: [ conf[:az] ]}
+      end
+      node.vm.hostname = "az#{conf[:az]}-n#{conf[:seq]}"
+      # node.vm.network "private_network", bridge: "Default Switch"
+      # node.vm.network "private_network", bridge: "az#{conf[:az]}", ip: "#{conf[:ip]}#{conf[:az]}.0.#{conf[:seq]}"
+      node.vm.provision "shell", path: "./scripts/ip-ubuntu.sh", args: [ "#{conf[:ip]}#{conf[:az]}.0.#{conf[:seq]}/16" , "#{conf[:ip]}#{conf[:az]}.0.1", conf[:dns]]
+      node.vm.provision "shell", path: "./scripts/role-#{conf[:role]}.sh" if conf[:role] # Roles are configured using default network
+      node.vm.provision :reload
+      node.vm.provider "hyperv" do |box|
+          box.memory = "1024" # Minimum for ubuntu
+          box.maxmemory = conf[:memory]
+          box.cpus = conf[:cpu]
+          box.vm_integration_services = {
+            guest_service_interface: true,
+            time_synchronization: true,
+          }
+      end
+    end
+  end
+end

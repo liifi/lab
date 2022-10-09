@@ -1,0 +1,46 @@
+# Fillout and and remove suffix .example
+answers = {
+  vsphere_user = "administrator@vsphere.local"
+  vsphere_password = ""
+  vsphere_server = ""
+  zone = {
+    az1 = {
+      dc = "Site A"
+      cluster = "Site A Cluster"
+      data = "Datastore Site A"
+      network = "VM Network"
+      ubuntu_template = "ubuntu-template"
+      vm = [
+        { enable=true, cpu=4, memory=1, gateway="X.X.X.1", ips=[{ip="10.211.0.1", ip_slash=16, dns="8.8.8.8"}, {ip="X.X.X.27", ip_slash=27, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.211.0.1", ips=[{ip="10.211.0.10", ip_slash=16, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.211.0.1", ips=[{ip="10.211.0.20", ip_slash=16, dns="8.8.8.8"}]},
+      ]
+    },
+    az2 = {
+      dc = "Site B"
+      cluster = "Site B Cluster"
+      data = "Datastore Site B"
+      network = "VM Network"
+      ubuntu_template = "ubuntu-template"
+      vm = [
+        { enable=true, cpu=4, memory=1, gateway="X.X.X.1", ips=[{ip="10.212.0.1", ip_slash=16, dns="8.8.8.8"}, {ip="X.X.X.28", ip_slash=27, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.212.0.1", ips=[{ip="10.212.0.10", ip_slash=16, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.212.0.1", ips=[{ip="10.212.0.20", ip_slash=16, dns="8.8.8.8"}]},
+      ]
+    },
+    az9 = {
+      dc = "Site B"
+      cluster = "Site B Cluster"
+      data = "Datastore Site B"
+      network = "VM Network"
+      ubuntu_template = "ubuntu-template"
+      vm = [
+        { enable=true, cpu=4, memory=1, gateway="X.X.X.1", ips=[{ip="10.219.0.1", ip_slash=16, dns="8.8.8.8"}, {ip="X.X.X.29", ip_slash=27, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.219.0.1", ips=[{ip="10.219.0.10", ip_slash=16, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.219.0.1", ips=[{ip="10.219.0.20", ip_slash=16, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.219.0.1", ips=[{ip="10.219.0.30", ip_slash=16, dns="8.8.8.8"}]},
+        { enable=true, cpu=4, memory=4, gateway="10.219.0.1", ips=[{ip="10.219.0.40", ip_slash=16, dns="8.8.8.8"}, {ip="X.X.X.20", ip_slash=27, dns="8.8.8.8"}]},
+      ]
+    }
+  }
+}

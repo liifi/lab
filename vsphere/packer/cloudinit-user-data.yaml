@@ -1,0 +1,60 @@
+#cloud-config
+# package_upgrade: true
+autoinstall:
+  version: 1
+  locale: en_US
+  keyboard:
+    layout: en
+    variant: us
+  network:
+    network:
+      version: 2
+      ethernets:
+        ens192:
+          dhcp4: false
+          addresses: [${address}]
+          routes:
+          - to: default
+            via: ${gateway}
+          nameservers:
+            addresses: [${dns}]
+  storage:
+    layout:
+      name: lvm
+  identity:
+    hostname: ubuntu-template
+    # password: '${bcrypt(pass)}' # Not supported by ubuntu
+    password: '${pass_encrypted}' # Encrypt with: mkpasswd --rounds 15000 -m SHA-512 "password" kzRuoYUc97N8A4bK$SeBtYNRLeIV
+    username: "${user}"
+  ssh:
+    install-server: true
+    allow-pw: true
+    # authorized-keys:
+    # - $${ssh_key_pub} # ssh-keygen -t rsa -P "" -f identity
+  user-data:
+    disable_root: true
+  # Update the installer and mirrors to have more contorl in case broken/old mirrors from live cd
+  refresh-installer:
+    update: true
+  apt:
+    preserve_sources_list: false
+    primary:
+    - arches: [default]
+      uri: "http://archive.ubuntu.com/ubuntu"
+    geoip: false
+  packages:
+  - open-vm-tools
+  # - perl
+  early-commands:
+  - systemctl stop ssh
+  late-commands:
+  # Make user sudoer
+  - "echo 'Defaults:${user} !requiretty' > /target/etc/sudoers.d/${user}"
+  - "echo '${user} ALL=(ALL) NOPASSWD: ALL' >> /target/etc/sudoers.d/${user}"
+  - "chmod 440 /target/etc/sudoers.d/${user}"
+  # Prevent cloudconfig from preserving the original hostname
+  - "sed -i 's/preserve_hostname: false/preserve_hostname: true/g' /target/etc/cloud/cloud.cfg"
+  - "truncate -s0 /target/etc/hostname"
+  - "hostnamectl set-hostname localhost"
+  # Remove network configuraiton
+  - "rm /target/etc/netplan/00-installer-config.yaml"
