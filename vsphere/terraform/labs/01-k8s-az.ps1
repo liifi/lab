@@ -365,9 +365,9 @@ $setup_docker
 "@
 
 # Some utility docker containers
-# docker run -d --name desktop -e HTTP_PASSWORD=${PASS} -p 443:443 -e SSL_PORT=443 -v ${PWD}/ssl:/etc/nginx/ssl -v /dev/shm:/dev/shm dorowu/ubuntu-desktop-lxde-vnc
+# docker run -d --name desktop -e HTTP_PASSWORD=${PASS} -p 443:443 -e SSL_PORT=443 -e USER=test -v ${HOME}/desktop:/home/test/desktop -v ${PWD}/ssl:/etc/nginx/ssl -v /dev/shm:/dev/shm dorowu/ubuntu-desktop-lxde-vnc
 # docker run --name vpn -e VPN_DNS_SRV1=10.219.0.10 --restart=always -v $PWD/vpn:/etc/ipsec.d -v /li/modules:/lib/modules:ro -p 500:500/udp -p 4500:4500/udp -d --privileged hwdsl2/ipsec-vpn-server
-# docker run -it --name code -p 8080:8080   -v "$HOME/.config:/home/coder/.config"   -v "$PWD/code:/home/coder/project"   -u "$(id -u):$(id -g)" -e PASSWORD=${PASS} -e "DOCKER_USER=$USER"  codercom/code-server:latest --cert /home/coder/project/ssl/nginx.crt --cert-key /home/coder/project/ssl/nginx.key
+# docker run -it --name code -p 8080:8080 -v "$HOME/.config:/home/coder/.config" -v "$PWD/code:/home/coder/project" -u "$(id -u):$(id -g)" -e PASSWORD=${PASS} -e "DOCKER_USER=$USER" codercom/code-server:latest --cert /home/coder/project/ssl/nginx.crt --cert-key /home/coder/project/ssl/nginx.key
 
 # URL:     https://x-x-x-x.xip.$DOMAIN/
 # Docker:  docker run -d --name desktop -e HTTP_PASSWORD=${PASS} -p 443:443 -e SSL_PORT=443 -v ${PWD}/ssl:/etc/nginx/ssl -v /dev/shm:/dev/shm dorowu/ubuntu-desktop-lxde-vn
