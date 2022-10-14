@@ -2,6 +2,13 @@
 
 ##########################
 
+if($IsLinux){
+    function wsl() {
+        $params = $args[4..($args.Count-1)]
+        sudo @params
+    }
+}
+
 . "$PSScriptRoot/_utils.ps1"
 
 Write-Host "💡 To distribute the key will rely on wsl, and use sshpass"
@@ -26,6 +33,48 @@ touch \`$HOME/.hushlogin;
 echo '$key' > \`$HOME/.ssh/id_rsa;
 chmod 600 \`$HOME/.ssh/id_rsa;
 "@
+
+##############################################
+# If there is a opnsense router setup and no gateway are needed
+if($env:ROUTING="opnsense"){
+
+runp $($zone.az9.gw) $pass $(if($IsLinux){$setup_ssh_key.replace("\$","$")}else{$setup_ssh_key}) # Only escape if using wsl
+
+# Distribute the key to hosts in the lab
+runex $($zone.az9.gw) @"
+cat > ~/cmd <<EOF
+$setup_ssh_key
+EOF
+echo Running commands from `$HOSTNAME;
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.211.0.10 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.211.0.20 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.10 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.20 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.30 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.10 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.20 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.30 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.40 `$(cat ~/cmd)
+rm ~/cmd
+"@
+
+push 9 40 $PSScriptRoot/../scripts/ip-ubuntu.sh /home/test/ip-ubuntu.sh
+push 9 40 $PSScriptRoot/../scripts/role-docker.sh /home/test/role-docker.sh
+runex $($zone.az9.gw) @"
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.211.0.10:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.211.0.20:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.10:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.20:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.30:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.10:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.20:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.30:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.40:~
+"@
+
+##############################################
+# If using servers as individual routers for each network
+} else {
 
 # NAT: https://blogs.fsfe.org/viktor/archives/79
 $setup = @"
@@ -56,6 +105,7 @@ sudo ip route add $($zone.az1.subnet) via $($zone.az1.gw)
 sudo ip route add $($zone.az9.subnet) via $($zone.az9.gw)
 ip route
 "@
+
 runex $($zone.az9.gw) @"
 $setup
 sudo ip route add $($zone.az1.subnet) via $($zone.az1.gw)
@@ -68,14 +118,15 @@ runex $($zone.az9.gw) @"
 cat > ~/cmd <<EOF
 $setup_ssh_key
 EOF
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.211.0.10 `$(cat ~/cmd)
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.211.0.20 `$(cat ~/cmd)
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.10 `$(cat ~/cmd)
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.20 `$(cat ~/cmd)
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.10 `$(cat ~/cmd)
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.20 `$(cat ~/cmd)
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.30 `$(cat ~/cmd)
-sshpass -p "$pass" ssh -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.40 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.211.0.10 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.211.0.20 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.10 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.20 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.212.0.30 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.10 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.20 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.30 `$(cat ~/cmd)
+sshpass -p "$pass" ssh -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no test@10.219.0.40 `$(cat ~/cmd)
 rm ~/cmd
 "@
 
@@ -83,12 +134,15 @@ rm ~/cmd
 push 9 1 $PSScriptRoot/../scripts/ip-ubuntu.sh /home/test/ip-ubuntu.sh
 push 9 1 $PSScriptRoot/../scripts/role-docker.sh /home/test/role-docker.sh
 runex $($zone.az9.gw) @"
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.211.0.10:~
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.211.0.20:~
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.10:~
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.20:~
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.10:~
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.20:~
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.30:~
-scp -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.40:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.211.0.10:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.211.0.20:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.10:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.20:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.212.0.30:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.10:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.20:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.30:~
+scp -o ConnectTimeout=1 -o LogLevel=ERROR -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no ~/*.sh test@10.219.0.40:~
 "@
+
+}
