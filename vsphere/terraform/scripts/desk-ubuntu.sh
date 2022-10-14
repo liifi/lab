@@ -1,5 +1,27 @@
 
 ##################################
+# Update apt
+sudo apt update
+sudo apt install command-not-found
+sudo apt update
+
+# What is the proper way to install it when missing?
+cat >> $HOME/.bashrc <<'EOF'
+command_not_found_handle() {
+  if  [ -x /usr/lib/command-not-found ]; then
+     /usr/lib/command-not-found -- "$1" 
+     return $?
+  else
+     return 127
+  fi        
+}
+EOF
+
+##################################
+# Utils
+sudo apt install iputils-ping bind9-dnsutils inetutils-traceroute
+
+##################################
 # So emojis render
 sudo apt install fonts-noto-color-emoji
 
@@ -19,7 +41,10 @@ ln -s $HOME/.local/bin/code $HOME/app/vscode/code
 ##################################
 # Packer
 curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+# sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
+    https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
+    sudo tee /etc/apt/sources.list.d/hashicorp.list
 sudo apt-get update
 sudo apt-get install -y xorriso packer
 
