@@ -20,7 +20,7 @@ ssh-keygen -t rsa -P `"`" -f $tmp/private_key
 Write-Host "💡 Sending the key to servers"
 $pass     = if(${env:PASS}){${env:PASS}}else{Read-Host "Server password"}
 $key_pub  = Get-Content -Raw  $tmp/private_key.pub
-$key      = Get-Content -Raw  $tmp/private_key
+$key      = (Get-Content -Raw  $tmp/private_key).replace("`n","\n")
 
 # TODO: Maybe do this process through one of the external servers instead (to not deal with wsl)
 $setup_ssh_key = @"
@@ -30,7 +30,7 @@ echo '$key_pub' > \`$HOME/.ssh/authorized_keys;
 chmod 700 \`$HOME/.ssh;
 chmod 600 \`$HOME/.ssh/authorized_keys;
 touch \`$HOME/.hushlogin;
-echo '$key' > \`$HOME/.ssh/id_rsa;
+echo -e '$key' > \`$HOME/.ssh/id_rsa;
 chmod 600 \`$HOME/.ssh/id_rsa;
 "@
 
