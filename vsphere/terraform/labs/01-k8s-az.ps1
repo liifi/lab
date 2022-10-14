@@ -294,12 +294,17 @@ if ! grep -q nameservers /etc/netplan/99-netcfg-vmware.yaml; then
   sudo curl -L https://github.com/mikefarah/yq/releases/download/v4.27.5/yq_linux_amd64 -o /usr/bin/yq
   sudo chmod +x /usr/bin/yq
   sudo mv /etc/netplan/00-installer-config.yaml /etc/netplan/00-installer-config.yaml.bak
-  ip=`$(yq '.network.ethernets.ens192.addresses[0]' < /etc/netplan/99-netcfg-vmware.yaml)
-  gw=`$(yq '.network.ethernets.ens192.gateway4' < /etc/netplan/99-netcfg-vmware.yaml)
-  sudo ~/ip-ubuntu.sh `$ip `$gw $MGMT_IP
-  sudo netplan apply
-  sudo systemctl restart systemd-resolved
-  sleep 1
+  sudo cp /etc/netplan/99-netcfg-vmware.yaml /etc/netplan/99-netcfg-vmware.yaml.bak
+  ip=`$(yq '.network.ethernets.ens192.addresses[0]' < /etc/netplan/99-netcfg-vmware.yaml.bak)
+  gw=`$(yq '.network.ethernets.ens192.gateway4' < /etc/netplan/99-netcfg-vmware.yaml.bak)
+  if [ -n "`$ip" ] && [ -n "`$gw" ]; then
+    sudo ~/ip-ubuntu.sh `$ip `$gw $MGMT_IP
+    sudo netplan apply
+    sudo systemctl restart systemd-resolved
+    sleep 1
+  else
+    echo "Unable to get values to update DNS netplan using yq"
+  fi
 fi
 "@
 

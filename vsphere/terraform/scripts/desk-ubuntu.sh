@@ -5,6 +5,8 @@ sudo apt update
 sudo apt install command-not-found
 sudo apt update
 
+# sudo /usr/lib/command-not-found -- dig
+
 # What is the proper way to install it when missing?
 cat >> $HOME/.bashrc <<'EOF'
 command_not_found_handle() {
