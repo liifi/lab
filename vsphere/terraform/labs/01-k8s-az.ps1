@@ -153,7 +153,7 @@ sudo chmod +x /usr/bin/crictl /usr/bin/ctr
 
 $setup_sample = @"
 echo -e '\U0001F4A1' `$HOSTNAME: setup sample...
-cat > sample.yaml <<EOF
+cat > sample.yaml <<SAMPLE
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -202,7 +202,7 @@ spec:
   clusterIP: None
   selector:
     k8s-app: web # Used in hubble-ui
-EOF
+SAMPLE
 kubectl apply -f sample.yaml
 kubectl expose deployment web --type=NodePort --port=80
 kubectl get svc web
@@ -215,7 +215,7 @@ $setup_metallb = @"
 echo -e '\U0001F4A1' `$HOSTNAME: setup metallb...
 kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.13.5/config/manifests/metallb-native.yaml
 sleep 1
-cat > metal.yaml <<EOF
+cat > metal.yaml <<METALLB
 apiVersion: metallb.io/v1beta1
 kind: IPAddressPool
 metadata:
@@ -254,7 +254,7 @@ spec:
     port: 53
     protocol: TCP
     targetPort: 53
-EOF
+METALLB
 kubectl apply -f metal.yaml
 "@
 
@@ -348,13 +348,18 @@ $setup_rke2_node = @"
 $setup_dns
 $setup_tools
 $setup_rke2
+"@
+
+$setup_rke2_node_and_cluster = @"
 $setup_metallb
 $setup_sample
 "@
 
-run 1 10 $setup_rke2_node.Replace("AZ.","10.211.0.")
+run 1 10 $setup_rke2_node_and_cluster.Replace("AZ.","10.211.0.")
 run 1 20 $setup_rke2_node.Replace("AZ.","10.211.0.")
-run 2 10 $setup_rke2_node.Replace("AZ.","10.212.0.")
+run 2 30 $setup_rke2_node.Replace("AZ.","10.211.0.")
+
+run 2 10 $setup_rke2_node_and_cluster.Replace("AZ.","10.212.0.")
 run 2 20 $setup_rke2_node.Replace("AZ.","10.212.0.")
 
 run 9 20 $setup_dns
