@@ -11,13 +11,17 @@ if($IsLinux){
 
 . "$PSScriptRoot/_utils.ps1"
 
-Write-Host "💡 To distribute the key will rely on wsl, and use sshpass"
+$on = [System.Char]::ConvertFromUtf32([System.Convert]::toInt32("1F4A1",16))
+
+Write-Host "$on To distribute the key will rely on wsl, and use sshpass"
 wsl -u root -d Ubuntu apt install sshpass
 
-Write-Host "💡 Creating key pair using windows ssh-keygen"
-ssh-keygen -t rsa -P `"`" -f $tmp/private_key
+if(!(Test-Path $tmp/private_key)){
+  Write-Host "$on Creating key pair using windows ssh-keygen"
+  ssh-keygen -t rsa -P `"`" -f $tmp/private_key
+}
 
-Write-Host "💡 Sending the key to servers"
+Write-Host "$on Sending the key to servers"
 $pass     = if(${env:PASS}){${env:PASS}}else{Read-Host "Server password"}
 $key_pub  = Get-Content -Raw  $tmp/private_key.pub
 $key      = (Get-Content -Raw  $tmp/private_key).replace("`n","\n")
@@ -36,11 +40,12 @@ chmod 600 \`$HOME/.ssh/id_rsa;
 
 ##############################################
 # If there is a opnsense router setup and no gateway are needed
-if($env:ROUTING="opnsense"){
+if($env:ROUTING -eq "opnsense"){
 
 runp $($zone.az9.gw) $pass $(if($IsLinux){$setup_ssh_key.replace("\$","$")}else{$setup_ssh_key}) # Only escape if using wsl
-
+  
 # Distribute the key to hosts in the lab
+Write-Host "$on Using $($zone.az9.gw) as the bastion"
 runex $($zone.az9.gw) @"
 cat > ~/cmd <<EOF
 $setup_ssh_key
@@ -92,6 +97,7 @@ runp $($zone.az1.gw) $pass $setup_ssh_key
 runp $($zone.az2.gw) $pass $setup_ssh_key
 runp $($zone.az9.gw) $pass $setup_ssh_key
 
+Write-Host "$on Setting up gateway routes"
 runex $($zone.az1.gw) @"
 $setup
 sudo ip route add $($zone.az2.subnet) via $($zone.az2.gw)
@@ -113,6 +119,7 @@ sudo ip route add $($zone.az2.subnet) via $($zone.az2.gw)
 ip route
 "@
 
+Write-Host "$on Accessing hosts via each subnet's gateway"
 # Distribute the key to hosts in the lab
 runex $($zone.az9.gw) @"
 cat > ~/cmd <<EOF
