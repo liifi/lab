@@ -21,11 +21,16 @@ EOF
 
 ##################################
 # Utils
-sudo apt install iputils-ping bind9-dnsutils inetutils-traceroute
+sudo apt install -y \
+  iputils-ping \
+  bind9-dnsutils \
+  inetutils-traceroute \
+  iputils-arping \
+  arp-scan
 
 ##################################
 # So emojis render
-sudo apt install fonts-noto-color-emoji
+sudo apt install -y fonts-noto-color-emoji
 
 # Copy a ~/.profile
 # Copy a ~/.bashrc
