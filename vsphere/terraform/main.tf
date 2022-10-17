@@ -12,6 +12,7 @@ variable answers { type = any }
 locals {
     _ = var.answers
     vms = flatten([ for zoneid,zonespec in local._.zone : [ for i,spec in zonespec.vm : merge(spec,{zone=zoneid, id="${zoneid}-n${split(".",spec.ips[0].ip)[length(split(".",spec.ips[0].ip))-1]}"}) if spec.enable ] ])
+    alt_networks = { for alt_net in [ for net in flatten([ for vm in local.vms : [ for ip in vm.ips : try({name=ip.net,zone=vm.zone},null) ] ]) : net if net != null ] : "${alt_net.zone}-${alt_net.name}" => alt_net... }
 }
 
 provider "vsphere" {
@@ -44,6 +45,12 @@ data "vsphere_network" "all" {
   datacenter_id = data.vsphere_datacenter.all[each.key].id
 }
 
+data "vsphere_network" "alt" {
+  for_each      = local.alt_networks
+  name          = each.value[0].name # Grouped by zone network, only 1 needed
+  datacenter_id = data.vsphere_datacenter.all[each.value[0].zone].id # Grouped by zone network, only 1 needed
+}
+
 data "vsphere_virtual_machine" "ubuntu" {
   for_each      = local._.zone
   name          = each.value.ubuntu_template
@@ -63,7 +70,7 @@ resource "vsphere_virtual_machine" "vm" {
   dynamic "network_interface" {
     for_each = each.value.ips
     content {
-      network_id = data.vsphere_network.all[each.value.zone].id
+      network_id = try(data.vsphere_network.alt["${each.value.zone}-${network_interface.value.net}"].id, data.vsphere_network.all[each.value.zone].id)
       adapter_type = data.vsphere_virtual_machine.ubuntu[each.value.zone].network_interface_types[0]
     }
   }
