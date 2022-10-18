@@ -1,3 +1,5 @@
 config/domain
 config/subnet
 config/rke2.chart.cilium.yaml
+config/notes.txt
+config/opnsense.xml
