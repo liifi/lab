@@ -22,14 +22,14 @@ $USER = "test"
     errors
 }
 
-c01.k:53 {
+c01.k.${DOMAIN}:53 {
     errors
     cache 30
     forward . 10.211.0.200
     reload
 }
 
-c02.k:53 {
+c02.k.${DOMAIN}:53 {
     errors
     cache 30
     forward . 10.212.0.200
@@ -48,7 +48,7 @@ ${DOMAIN}:53 {
     errors
 }
 
-100.211.0.in-addr.arpa {
+0.219.10.in-addr.arpa {
     file /conf/coredns.arpa.db
     log
     errors
@@ -171,9 +171,12 @@ spec:
     spec:
       containers:
       - name: web
-        image: nginx
+        image: mendhak/http-https-echo # nginx
         ports:
-        - containerPort: 80
+        - name: http
+          containerPort: 80
+        - name: https
+          containerPort: 443
 ---
 apiVersion: v1
 kind: Service
@@ -192,6 +195,10 @@ spec:
     port: 80
     protocol: TCP
     targetPort: 80
+  - name: tcp-443
+    port: 443
+    protocol: TCP
+    targetPort: 443
 ---
 apiVersion: v1
 kind: Service
@@ -204,9 +211,71 @@ spec:
     k8s-app: web # Used in hubble-ui
 SAMPLE
 kubectl apply -f sample.yaml
-kubectl expose deployment web --type=NodePort --port=80
+kubectl expose deployment web --type=NodePort --port=80,443
 kubectl get svc web
 kubectl get svc xweb
+"@
+
+###
+
+$setup_desk = @"
+echo -e '\U0001F4A1' `$HOSTNAME: setup desk...
+cat > desk.yaml <<DESK
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: desk
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      k8s-app: desk # Used in hubble-ui
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        k8s-app: desk # Used in hubble-ui
+    spec:
+      containers:
+      - name: desk
+        image: dorowu/ubuntu-desktop-lxde-vnc
+        ports:
+        - containerPort: 80
+        tty: true
+        stdin: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: xdesk
+  namespace: default
+  annotations:
+    metallb.universe.tf/loadBalancerIPs: AZ.202
+spec:
+  allocateLoadBalancerNodePorts: false
+  type: LoadBalancer
+  selector:
+    k8s-app: desk # Used in hubble-ui
+  ports:
+  - name: tcp-80
+    port: 80
+    protocol: TCP
+    targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hdesk
+  namespace: default
+spec:
+  clusterIP: None
+  selector:
+    k8s-app: desk # Used in hubble-ui
+DESK
+kubectl apply -f desk.yaml
+kubectl expose deployment desk --type=NodePort --port=80
+kubectl get svc desk
+kubectl get svc xdesk
 "@
 
 ###
@@ -358,6 +427,7 @@ $setup_rke2
 $setup_rke2_node_and_cluster = @"
 $setup_metallb
 $setup_sample
+$setup_desk
 "@
 
 run 1 10 $setup_rke2_node_and_cluster.Replace("AZ.","10.211.0.")
