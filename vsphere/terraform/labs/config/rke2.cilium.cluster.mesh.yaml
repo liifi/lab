@@ -74,6 +74,9 @@ spec:
               blah
             key: &cakey |
               blah
+        cluster:
+          id: 1
+          name: c01
         clustermesh:
           useAPIServer: true
           config:
