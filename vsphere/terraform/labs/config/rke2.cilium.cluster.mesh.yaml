@@ -38,6 +38,7 @@ spec:
       disable-kube-proxy: [true]
     chartValues:
       rke2-cilium:
+        # ----
         # Native Routing (assuming CIDR is within layer2 routable cidr)
         tunnel: disabled
         autoDirectNodeRoutes: true
@@ -46,10 +47,12 @@ spec:
           lbExternalClusterIP: true # Allows external access to ClusterIP services
         loadBalancer:
           mode: hybrid # Allows SNAT for UDP and DSR for TCP
+        # ----
         # Replace kube-proxy
         kubeProxyReplacement: strict
         k8sServiceHost: 10.211.0.10 # Ideally load balance it instead of the first controller
         k8sServicePort: 6443
+        # ----
         # Hubble
         hubble:
           enabled: true
@@ -60,6 +63,33 @@ spec:
             ingress:
               enabled: true
               # hosts: [ netc01.$DOMAIN ] # Use external zone?
+        # ----
+        # Cluster Mesh - (Manual steps https://docs.cilium.io/en/stable/gettingstarted/clustermesh/clustermesh/)
+        # Hack
+        # image:
+        #   repository: quay.io/cilium/cilium # otherwise cilium cli will fail externally as it depends on image name to find a valid agent
+        tls:
+          ca:
+            cert: &cacert |
+              blah
+            key: &cakey |
+              blah
+        clustermesh:
+          useAPIServer: true
+          config:
+            enabled: true
+            # domain:  # only used if ips provided instead of addresses
+            clusters:
+            - name: c02
+              address: clustermesh-apiserver.kube-system.svc.c02.k.$DOMAIN
+              port: 2379
+          apiserver:
+            service:
+              type: ClusterIP
+            tls:
+              ca:
+                cert: *cacert
+                key: *cakey
     machinePools:
 #      - cloudCredentialSecretName: string
 #        controlPlaneRole: boolean

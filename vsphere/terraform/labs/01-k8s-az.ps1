@@ -109,7 +109,7 @@ fi
 
 $setup_coredns= @"
 echo -e '\U0001F4A1' `$HOSTNAME: setup coredns...
-docker run --name coredns -d --restart=unless-stopped -v /home/${USER}:/conf -p ${MGMT_IP}:53:53/tcp -p${MGMT_IP}:53:53/udp coredns/coredns -conf /conf/Corefile
+docker run --name coredns -d --restart=unless-stopped -v /home/${USER}:/conf -p ${MGMT_IP}:53:53/tcp -p ${MGMT_IP}:53:53/udp coredns/coredns -conf /conf/Corefile
 docker restart coredns
 sleep 1
 "@
