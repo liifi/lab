@@ -332,12 +332,21 @@ kubectl apply -f metal.yaml
 $setup_tools = @"
 echo -e '\U0001F4A1' `$HOSTNAME: setup tools...
 # docker run --rm -it cmd.cat/curl/wget/dig
-curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
-chmod 700 get_helm.sh
-./get_helm.sh
-curl -sfSL https://github.com/derailed/k9s/releases/download/v0.26.3/k9s_Linux_x86_64.tar.gz | sudo tar -xz  -C /usr/bin/
-curl -LO "https://dl.k8s.io/release/`$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+if ! command -v helm &> /dev/null
+then
+  curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+  chmod 700 get_helm.sh
+  ./get_helm.sh
+fi
+if ! command -v k9s &> /dev/null
+then
+  curl -sfSL https://github.com/derailed/k9s/releases/download/v0.26.3/k9s_Linux_x86_64.tar.gz | sudo tar -xz  -C /usr/bin/
+fi
+if ! command -v kubectl &> /dev/null
+then
+  curl -LO "https://dl.k8s.io/release/`$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+  sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+fi
 "@
 
 ####
