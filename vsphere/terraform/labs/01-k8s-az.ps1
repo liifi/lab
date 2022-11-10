@@ -467,7 +467,7 @@ $setup_docker
 # ethernets:
 #   ens192:
 #     dhcp4: no
-#     addresses: [10.219.0.40/16]
+#     addresses: [10.219.0.40/20]
 #     routes:
 #     - to: 10.0.0.0/8
 #       via: 10.219.0.1

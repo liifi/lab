@@ -65,7 +65,14 @@ spec:
               # hosts: [ netc01.$DOMAIN ] # Use external zone?
         # ----
         # Cluster Mesh - (Manual steps https://docs.cilium.io/en/stable/gettingstarted/clustermesh/clustermesh/)
-        # Hack
+        #              - Using clustermesh with native routing
+        #                - Without bgp (summarized static routes on routers instead) requires autoDirectNodeRoutes for auto managed routes,
+        #                  but if clusters are on separate subnet cilium will print warning messages of not being able to update routing table as other cluster nodes aren't on same layer 2
+        #                - If replacing kube proxy and using DSR or Hybrid to retain client ip, using on a service the global annotation
+        #                  will work with east/west traffic as the source ip will be of the pod (as long as it is in the proper subnet)
+        #                  but south/west traffic generated from outside the subnet will bounce out of it with a source ip that doesn't
+        #                  belong there so the router my not route
+        # Hack of image change, otherwise cilium cli will fail externally as it depends on image name to find a valid agent
         image:
           repository: quay.io/cilium/cilium # otherwise cilium cli will fail externally as it depends on image name to find a valid agent
         # External workloads has to be enabled so "clustermesh-apiserver-client-cert" is created

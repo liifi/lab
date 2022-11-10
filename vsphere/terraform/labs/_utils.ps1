@@ -5,15 +5,15 @@ $EXTSUBNET = Get-Content -Raw $PSScriptRoot/config/subnet # The reachable subnet
 
 if($env:ROUTING -eq "opnsense"){
   $zone = [PSCustomObject]@{
-    az1 = @{ gw="$EXTSUBNET.20"; subnet="10.211.0.0/16" }
-    az2 = @{ gw="$EXTSUBNET.20"; subnet="10.212.0.0/16" }
-    az9 = @{ gw="$EXTSUBNET.20"; subnet="10.219.0.0/16" }
+    az1 = @{ gw="$EXTSUBNET.20"; subnet="10.211.0.0/20" }
+    az2 = @{ gw="$EXTSUBNET.20"; subnet="10.212.0.0/20" }
+    az9 = @{ gw="$EXTSUBNET.20"; subnet="10.219.0.0/20" }
   }
 } else {
   $zone = [PSCustomObject]@{
-    az1 = @{ gw="$EXTSUBNET.27"; subnet="10.211.0.0/16" }
-    az2 = @{ gw="$EXTSUBNET.28"; subnet="10.212.0.0/16" }
-    az9 = @{ gw="$EXTSUBNET.29"; subnet="10.219.0.0/16" }
+    az1 = @{ gw="$EXTSUBNET.27"; subnet="10.211.0.0/20" }
+    az2 = @{ gw="$EXTSUBNET.28"; subnet="10.212.0.0/20" }
+    az9 = @{ gw="$EXTSUBNET.29"; subnet="10.219.0.0/20" }
   }
 }
 
