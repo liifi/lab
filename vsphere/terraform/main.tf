@@ -60,6 +60,8 @@ data "vsphere_virtual_machine" "ubuntu" {
 resource "vsphere_virtual_machine" "vm" {
   for_each         = { for v in local.vms : v.id => v }
   name             = each.value.id
+  enable_disk_uuid = true # Needed if using vsphere csi in kubernetes
+  hardware_version = 15 # Needed if using vsphere csi in kubernetes, https://kb.vmware.com/s/article/2007240 (15 only support esxi 6.7 U2+ and above)
   datastore_id     = data.vsphere_datastore.all[each.value.zone].id
   resource_pool_id = data.vsphere_compute_cluster.all[each.value.zone].resource_pool_id
   num_cpus         = each.value.cpu
